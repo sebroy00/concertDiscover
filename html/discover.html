@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<header>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/main.css">
+</header>
+
+<body>
+   <br>
+    <form class="form-horizontal">
+       <div class="form-group">
+           <label for="inputEmail3" class="col-sm-2 control-label">Playlist(s)</label>
+           <div class="col-sm-5">
+            <select class="form-control">
+               <option value="volvo">All</option>
+                <option value="volvo">Discover Weekly</option>
+                <option value="saab">Jazz</option>
+                <option value="mercedes">Fusion</option>
+                <option value="audi">Funk</option>
+            </select>
+           </div>
+       </div>
+        <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">Radius</label>
+            <div class="col-sm-5">
+               <div class="input-group">
+                <input type="number" class="form-control" id="inputRadius" placeholder="100">
+                <span class="input-group-addon">km</span>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputPassword3" class="col-sm-2 control-label">Location</label>
+            <div class="col-sm-5">
+                <input type="text" class="form-control" id="inputLocation" placeholder="Ottawa">
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-5">
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox"> Include top songs
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-5">
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox"> Include top artists
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-5">
+                <button class="btn btn-default" onclick="lookupConcerts">Search concerts</button>
+            </div>
+        </div>
+    </form>
+</body>
+<footer>
+    <script>
+        function lookupConcerts(){
+            
+        }
+    </script>
+</footer>
+
+</html>
