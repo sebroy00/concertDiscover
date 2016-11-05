@@ -11,9 +11,12 @@ var express = require('express'); // Express web server framework
 var request = require('request'); // "Request" library
 var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
+
+/*add your own authentication info in auth.js file (gitignore removes it from repo)*/
 var auth = require('./auth.js');
-var client_id = auth.client_id;
-var client_secret = auth.client_secret;
+var client_id = auth.id;
+var client_secret = auth.secret;
+
 var redirect_uri = 'http://localhost:8888/callback'; // Your redirect uri
 
 /**
