@@ -27,8 +27,6 @@
         </div>
         <div id="album">
         </div>
-        <div id="oauth">
-        </div>
       </div>
     </div>
 
@@ -58,10 +56,9 @@
       <div class="media">
         <div class="media-body">
           <dl class="dl-horizontal">
-            <dt>Album name</dt><dd class="clearfix">{{ENTER_HERE}}</dd>
-            <dt>Id</dt><dd>{{ENTER_HERE}}</dd>
-            <dt>Email</dt><dd>{{ENTER_HERE}}</dd>
-            <dt>Country</dt><dd>{{ENTER_HERE}}</dd>
+            <dt>Album name</dt><dd class="clearfix">{{id}}</dd>
+            <dt>Id</dt><dd>{{artists.0.id}}</dd>
+            <dt>Artist</dt><dd>{{artists.0.name}}</dd>
           </dl>
         </div>
       </div>
@@ -70,6 +67,7 @@
     
     <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>
     <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+    <script src="../js/local-api.js"></script>
     <script>
         
     
@@ -93,8 +91,15 @@
             userProfileTemplate = Handlebars.compile(userProfileSource),
             userProfilePlaceholder = document.getElementById('user-profile');
           
+        var albumProfileSource = document.getElementById('album-template').innerHTML,
+            albumProfileTemplate = Handlebars.compile(albumProfileSource),
+            albumPlaceHolder = document.getElementById('album');
+        
+        /*local api*/
+        var serverBasePath = 'http://localhost:8888/';
+        var localApi = new localProxyApi(serverBasePath); 
 
-        /*user data*/
+          /*user data*/
         var params = getHashParams();
 
         var access_token = params.access_token,
@@ -105,12 +110,6 @@
           alert('There was an error during the authentication');
         } else {
           if (access_token) {
-            // render oauth info
-            oauthPlaceholder.innerHTML = oauthTemplate({
-              access_token: access_token,
-              refresh_token: refresh_token
-            });
-
             $.ajax({
                 url: 'https://api.spotify.com/v1/me',
                 headers: {
@@ -125,13 +124,31 @@
             });
             
             /*logged in*/ 
-            getAlbum(access_token);
+            var albumInfo;
+            localApi.getArtist('0OdUWJ0sBjDrqHygGUXeCF').success(function(data){
+                albumInfo = data;
+                alert(albumInfo);
+            });
+            var artistId = '0OdUWJ0sBjDrqHygGUXeCF';
+            $.ajax({
+                url: 'https://api.spotify.com/v1/artists/' + artistId,
+                success: function(response) {
+                    albumPlaceHolder.innerHTML = albumProfileTemplate(response);
+                    alert(response);
+                }
+            });
+              
           } else {
               // render initial screen
               $('#login').show();
               $('#loggedin').hide();
           }
+      }
       })();
+        
+        function returnVal(val){
+            return val;
+        }
       </script>
       
       <script>
@@ -139,9 +156,7 @@
             var localApi = new localProxyApi(serverBasePath); 
             var currentApi = localApi;
           
-            var albumProfileSource = document.getElementById('album-template').innerHTML,
-            albumProfileTemplate = Handlebars.compile(albumProfileSource),
-            albumPlaceHolder = document.getElementById('album');
+           
             
             localApi//.function(...)
             

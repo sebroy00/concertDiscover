@@ -40,6 +40,7 @@ var app = express();
 
 app.use(express.static(__dirname + '/html'))
    .use(cookieParser());
+app.use(express.static('public'));
 
 app.get('/login', function(req, res) {
 
