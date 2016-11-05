@@ -1,12 +1,5 @@
 var localProxyApi = function (serverPath) {
-    
-  var getAlbum = function(albumID){
-    var url = 'https://api.spotify.com/v1/albums/' + albumID;
-    return $.ajax({
-        url: url
-    })
-  }   
-  
+
   var getArtistRelatedArtists = function(artistId) {
     var url = serverPath + '/spotify/artists/' + artistId + '/related-artists';
     return $.ajax({
