@@ -136,7 +136,6 @@
                     });
 
                     /*logged in*/
-                    var artistId = '0OdUWJ0sBjDrqHygGUXeCF';
                     getDiscoveryPlaylist();
                 } else {
                     // render initial screen
@@ -157,11 +156,11 @@
                         var i = 0;
                         while (response.tracks.items[i] != null) {
                             albumPlaceHolder.innerHTML += albumProfileTemplate(response.tracks.items[i].track);
+                            eventful_api_call('Ottawa', response.tracks.items[i].track.artists[0].name, 'Future', 500);
                             i++;
                         }
                     }
                 });
-                api_call_test();
             }
 
             function getDiscoveryPlaylist() {
@@ -188,18 +187,20 @@
     <script type="text/javascript" src="http://api.eventful.com/js/api">
     </script>
     <script type="text/javascript">
-        function api_call_test() {
+        function eventful_api_call(location, keywords, date, radius) {
             var oArgs = {
                 app_key: 'dVZ4kGxHCr6QMvS9',
                 q: "music",
-                where: "Ottawa",
+                where: location,
                 sort_order: "popularity",
-                keywords: "jazz"
+                keywords: keywords,
+                date: date,
+                within: radius
             };
             EVDB.API.call("/events/search", oArgs, function (oData) {
-                alert(oData.events.event[0].title + ', url :' + oData.events.event[0].url);
+                if(oData.events != null)
+                    alert(oData.events.event[0].title + ', location: ' +oData.events.event[0].city_name);
             });
-
         }
     </script>
 </body>
