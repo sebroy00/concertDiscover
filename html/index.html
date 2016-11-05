@@ -29,7 +29,6 @@
         </div>
         <div id="oauth">
         </div>
-        <button class="btn btn-default" id="obtain-new-token">Obtain new token using the refresh token</button>
       </div>
     </div>
 
@@ -53,15 +52,6 @@
       </div>
     </script>
     
-    <script id="oauth-template" type="text/x-handlebars-template">
-      <h2>oAuth info</h2>
-      <dl class="dl-horizontal">
-        <dt>Access token</dt><dd class="text-overflow">{{access_token}}</dd>
-        <dt>Refresh token</dt><dd class="text-overflow">{{refresh_token}}></dd>
-      </dl>
-    </script>
-
-   
    
    <script id="album-template" type="text/x-handlebars-template">
       <h1>Album</h1>
@@ -104,10 +94,6 @@
             userProfilePlaceholder = document.getElementById('user-profile');
           
 
-        var oauthSource = document.getElementById('oauth-template').innerHTML,
-            oauthTemplate = Handlebars.compile(oauthSource),
-            oauthPlaceholder = document.getElementById('oauth');
-          
         /*user data*/
         var params = getHashParams();
 
@@ -145,43 +131,20 @@
               $('#login').show();
               $('#loggedin').hide();
           }
-
-          document.getElementById('obtain-new-token').addEventListener('click', function() {
-            $.ajax({
-              url: '/refresh_token',
-              data: {
-                'refresh_token': refresh_token
-              }
-            }).done(function(data) {
-              access_token = data.access_token;
-              oauthPlaceholder.innerHTML = oauthTemplate({
-                access_token: access_token,
-                refresh_token: refresh_token
-              });
-            });
-          }, false);
-        }
       })();
       </script>
       
       <script>
+            var serverBasePath = 'http://localhost:8888/';
+            var localApi = new localProxyApi(serverBasePath); 
+            var currentApi = localApi;
+          
             var albumProfileSource = document.getElementById('album-template').innerHTML,
             albumProfileTemplate = Handlebars.compile(albumProfileSource),
             albumPlaceHolder = document.getElementById('album');
-          
-            /*Custom*/
-        
-            function getAlbum(access_token){
-                $.ajax({
-                    url: 'https://api.spotify.com/v1/me',
-                    headers: {
-                      'Authorization': 'Bearer ' + access_token
-                    },
-                    success: function(response) {
-                      userProfilePlaceholder.innerHTML = userProfileTemplate(response);
-                    }
-                });
-            }
+            
+            localApi//.function(...)
+            
       </script>
       
   </body>
