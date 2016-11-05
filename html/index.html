@@ -26,6 +26,7 @@
         <div id="user-profile">
         </div>
         <div id="album">
+            <h1>Albums</h1>
         </div>
       </div>
     </div>
@@ -52,7 +53,6 @@
     
    
    <script id="album-template" type="text/x-handlebars-template">
-      <h1>Album</h1>
       <div class="media">
         <div class="media-body">
           <dl class="dl-horizontal">
@@ -105,7 +105,8 @@
         var access_token = params.access_token,
             refresh_token = params.refresh_token,
             error = params.error;
-
+        var user_id = '';
+          
         if (error) {
           alert('There was an error during the authentication');
         } else {
@@ -117,49 +118,58 @@
                 },
                 success: function(response) {
                   userProfilePlaceholder.innerHTML = userProfileTemplate(response);
-
+                  user_id = response.id;
                   $('#login').hide();
                   $('#loggedin').show();
                 }
             });
             
             /*logged in*/ 
-            var albumInfo;
-            localApi.getArtist('0OdUWJ0sBjDrqHygGUXeCF').success(function(data){
-                albumInfo = data;
-                alert(albumInfo);
-            });
             var artistId = '0OdUWJ0sBjDrqHygGUXeCF';
-            $.ajax({
-                url: 'https://api.spotify.com/v1/artists/' + artistId,
-                success: function(response) {
-                    albumPlaceHolder.innerHTML = albumProfileTemplate(response);
-                    alert(response);
-                }
-            });
-              
+            getDiscoveryPlaylist();
           } else {
               // render initial screen
               $('#login').show();
               $('#loggedin').hide();
           }
       }
-      })();
-        
-        function returnVal(val){
-            return val;
-        }
-      </script>
       
-      <script>
-            var serverBasePath = 'http://localhost:8888/';
-            var localApi = new localProxyApi(serverBasePath); 
-            var currentApi = localApi;
-          
-           
-            
-            localApi//.function(...)
-            
+        
+
+            function getArtistsFromPlaylist(playlist_id){
+                $.ajax({
+                url: 'https://api.spotify.com/v1/users/spotifydiscover/playlists/' + playlist_id,
+                headers: {
+                  'Authorization': 'Bearer ' + access_token
+                },
+                success: function(response) {
+                    var i = 0;
+                    while(response.tracks.items[i] != null){
+                        albumPlaceHolder.innerHTML += albumProfileTemplate(response.tracks.items[i].track);
+                        i++;
+                    }
+                }});
+            }
+        
+            function getDiscoveryPlaylist(){
+                $.ajax({
+                url: 'https://api.spotify.com/v1/me/playlists/',
+                headers: {
+                  'Authorization': 'Bearer ' + access_token
+                },
+                success: function(response) {
+                    var a = 0
+                    while(response.items[a++] != null) {
+                        alert(response.items[a].name);
+                        if (response.items[a].name == "Discover Weekly"){
+                            getArtistsFromPlaylist(response.items[a].id);
+                            break;
+                        }
+                    }
+                }
+                });
+            }
+          })();
       </script>
       
   </body>
