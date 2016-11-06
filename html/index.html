@@ -1,92 +1,100 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-
-<head>
-    <title>Concert Discover</title>
+<header>
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
-    <style type="text/css">
-        #login,
-        #loggedin {
-            display: none;
-        }
-        
-        .text-overflow {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            width: 500px;
+    <style>
+        body {
+            margin: 0 100px;
+            background-color: #fffff6;
         }
     </style>
-</head>
+</header>
 
 <body>
-    <div class="container">
-        <div id="login">
-            <h1>This is an example of the Authorization Code flow</h1>
-            <a href="/login" class="btn btn-primary">Log in with Spotify</a>
-        </div>
-        <div id="loggedin">
-            <div id="user-profile">
+    <a href="/login" id="login" class="btn btn-primary">Log in with Spotify</a>
+    <br>
+    <form class="form-horizontal">
+        <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">Playlist(s)</label>
+            <div class="col-sm-5">
+                <select class="form-control" id="dropdown_playlists">
+                    <option value="volvo">All</option>
+                </select>
             </div>
-            <div id="album">
-                <h1>Albums</h1>
+        </div>
+        <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">Radius</label>
+            <div class="col-sm-5">
+                <div class="input-group">
+                    <input type="number" class="form-control" id="inputRadius" placeholder="100">
+                    <span class="input-group-addon">km</span>
+                </div>
             </div>
         </div>
-    </div>
-
+        <div class="form-group">
+            <label for="inputPassword3" class="col-sm-2 control-label">Location</label>
+            <div class="col-sm-5">
+                <input type="text" class="form-control" id="inputLocation" placeholder="Ottawa">
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-5">
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox"> Include top songs
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-5">
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox"> Include top artists
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-5">
+                <button class="btn btn-default" id="lookup" onclick="lookupConcerts()">Search concerts</button>
+            </div>
+        </div>
+         <div class="form-group">
+            <h2 class="col-sm-2 control-label">Results</h2>
+        </div>
+        <div class="form-group">
+           <h2 class="col-sm-2 control-label"></h2>
+            <div id="user-profile" class="col-sm-5">
+            </div>
+        </div>
+    </form>
+</body>
+<footer>
     <script id="user-profile-template" type="text/x-handlebars-template">
-        <h1>Logged in as {{display_name}}</h1>
         <div class="media">
-            <div class="pull-left">
-                <img class="media-object" width="150" src="{{images.0.url}}" />
+            <div class="pull-right">
+                <img class="media-object pull-right" width="150" src="" id="{{id}}2" />
             </div>
             <div class="media-body">
                 <dl class="dl-horizontal">
-                    <dt>Display name</dt>
-                    <dd class="clearfix">{{display_name}}</dd>
-                    <dt>Id</dt>
-                    <dd>{{id}}</dd>
-                    <dt>Email</dt>
-                    <dd>{{email}}</dd>
-                    <dt>Spotify URI</dt>
-                    <dd><a href="{{external_urls.spotify}}">{{external_urls.spotify}}</a></dd>
-                    <dt>Link</dt>
-                    <dd><a href="{{href}}">{{href}}</a></dd>
-                    <dt>Profile Image</dt>
-                    <dd class="clearfix"><a href="{{images.0.url}}">{{images.0.url}}</a></dd>
-                    <dt>Country</dt>
-                    <dd>{{country}}</dd>
+                    <dt><span class="pull-left" id="{{id}}1">-></span>Artist</dt>
+                    <dd class="clearfix">{{title}}</dd>
+                    <dt>City</dt>
+                    <dd>{{city_name}}</dd>
+                    <dt>Venue</dt>
+                    <dd>{{venue_name}}</dd>
+                    <dt>Date</dt>
+                    <dd>{{start_time}}</dd>
                 </dl>
             </div>
         </div>
     </script>
-
-
-    <script id="album-template" type="text/x-handlebars-template">
-        <div class="media" id="{{id}}1">
-           <div class="pull-right">
-                <img class="media-object pull-right" width="150" src="" id="{{id}}2"/>
-            </div>
-            <div class="media-body">
-                <dl class="dl-horizontal">
-                    <dt>Album name</dt>
-                    <dd class="clearfix">{{id}}</dd>
-                    <dt>Id</dt>
-                    <dd>{{artists.0.id}}</dd>
-                    <dt>Artist</dt>
-                    <dd>{{artists.0.name}}</dd>
-                </dl>
-            </div>
-        </div>
-    </script>
-
-
+    <script type="text/javascript" src="http://api.eventful.com/js/api"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>
     <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
-    <script src="../js/local-api.js"></script>
     <script>
         (function () {
-
             /**
              * Obtains parameters from the hash of the URL
              * @return Object
@@ -101,13 +109,9 @@
                 return hashParams;
             }
 
-            var userProfileSource = document.getElementById('user-profile-template').innerHTML,
-                userProfileTemplate = Handlebars.compile(userProfileSource),
-                userProfilePlaceholder = document.getElementById('user-profile');
-
-            var albumProfileSource = document.getElementById('album-template').innerHTML,
+            var albumProfileSource = document.getElementById('user-profile-template').innerHTML,
                 albumProfileTemplate = Handlebars.compile(albumProfileSource),
-                albumPlaceHolder = document.getElementById('album');
+                albumPlaceHolder = document.getElementById('user-profile');
 
             /*user data*/
             var params = getHashParams();
@@ -121,49 +125,17 @@
                 alert('There was an error during the authentication');
             } else {
                 if (access_token) {
-                    $.ajax({
-                        url: 'https://api.spotify.com/v1/me',
-                        headers: {
-                            'Authorization': 'Bearer ' + access_token
-                        },
-                        success: function (response) {
-                            userProfilePlaceholder.innerHTML = userProfileTemplate(response);
-                            user_id = response.id;
-                            $('#login').hide();
-                            $('#loggedin').show();
-                        }
-                    });
-
                     /*logged in*/
-                    getDiscoveryPlaylist();
+                    //getUserPlayLists();
+                    $('#login').hide();
                 } else {
                     // render initial screen
                     $('#login').show();
-                    $('#loggedin').hide();
                 }
             }
 
-
-
-            function getArtistsFromPlaylist(playlist_id, playlist_origin) {
-                $.ajax({
-                    url: 'https://api.spotify.com/v1/users/'+ playlist_origin +'/playlists/' + playlist_id,
-                    headers: {
-                        'Authorization': 'Bearer ' + access_token
-                    },
-                    success: function (response) {
-                        var i = 0;
-                        while (response.tracks.items[i] != null) {
-                            albumPlaceHolder.innerHTML += albumProfileTemplate(response.tracks.items[i].track);
-                            $("#" + response.tracks.items[i].track.id + "2").attr("src", response.tracks.items[i].track.album.images[0].url);
-                            eventful_api_call('Ottawa', response.tracks.items[i].track.artists[0].name, 'Future', 200);
-                            i++;
-                        }
-                    }
-                });
-            }
-
-            function getDiscoveryPlaylist() {
+            /*for dropdown*/
+            function getUserPlayLists() {
                 $.ajax({
                     url: 'https://api.spotify.com/v1/me/playlists/',
                     headers: {
@@ -171,43 +143,105 @@
                     },
                     success: function (response) {
                         var a = 0
-                        while (response.items[a++] != null) {
-                            //alert(response.items[a].name);
-                            if (response.items[a].name == "Discover Weekly") {
-                                //getArtistsFromPlaylist(response.items[a].id, 'spotifydiscover');
+                        while (response.items[a] != null) {
+                            $("#dropdown_playlists").append( '<option>' + response.items[a].name + '</option>' );
+                            a++;
+                        }
+                    }
+                });
+            }
+            getUserPlayLists();
+            /*-----*/
+            var loadCount = 0;
+            lookupConcerts = function () {
+                var playlist = $("#dropdown_playlists").find(":selected").text();
+                var radius = $("#inputRadius").val();
+                var location = $("#inputLocation").val();
+                albumPlaceHolder.innerHTML = "<img src='http://preloaders.net/preloaders/8/Triangles%20indicator.gif' id='load" + loadCount + "'/>";
+                getPlaylistAlbums(playlist, radius, location);
+            }
+
+            var img_url = "";
+            var current_id = "";
+            var result_count = 0;
+
+            function getPlaylistAlbums(playlist, radius, location) {
+                $.ajax({
+                    url: 'https://api.spotify.com/v1/me/playlists/',
+                    headers: {
+                        'Authorization': 'Bearer ' + access_token
+                    },
+                    success: function (response) {
+                        var a = 0
+                        while (response.items[a] != null) {
+                            var response2 = response.items[a];
+                            if (response2.name == playlist || playlist == "All") {
+                                if(response2.name == "Discover Weekly")
+                                    getArtistsFromPlaylist(response.items[a].id, 'spotifydiscover', radius, location);
+                                else
+                                    getArtistsFromPlaylist(response.items[a].id, 'spotify', radius, location);
                             }
-                            else{
-                                getArtistsFromPlaylist(response.items[a].id, 'spotify');
+                            a++;
+                        }
+                    }
+                });
+                if(no_results_found){
+                    albumPlaceHolder.innerHTML = "no results found.";
+                }
+            }
+
+            function getArtistsFromPlaylist(playlist_id, playlist_origin, radius, location) {
+                $.ajax({
+                    url: 'https://api.spotify.com/v1/users/' + playlist_origin + '/playlists/' + playlist_id,
+                    headers: {
+                        'Authorization': 'Bearer ' + access_token
+                    },
+                    success: function (response) {
+                        var i = 0;
+                        while (response.tracks.items[i] != null) {
+                            var _img_url = response.tracks.items[i].track.album.images[0].url;
+                            result_count++;
+                            eventful_api_call(response.tracks.items[i].track.artists[0].name, radius, location, 'Future', _img_url);
+                            i++;
+                        }
+                    }
+                });
+            }
+            
+            var no_results_found = true;
+            function eventful_api_call(keywords, radius, location, date, _img_url) {
+                var oArgs = {
+                    app_key: 'dVZ4kGxHCr6QMvS9',
+                    q: "music",
+                    where: location,
+                    sort_order: "popularity",
+                    keywords: keywords,
+                    date: date,
+                    within: radius
+                };
+                EVDB.API.call("/events/search", oArgs, function (oData) {
+                    $("#load" + loadCount).hide();
+                    if (oData.events != null) {
+                        no_results_found = false;
+                        if (parseInt(oData.page_count) > 1) {
+                            if (oData.events.event[0].city_name && oData.events.event[0].city_name != "Watertown"){
+                                albumPlaceHolder.innerHTML += albumProfileTemplate(oData.events.event[0]);
+                                if(!$("#" + oData.events.event.id + "2").attr("src"))
+                                    $("#" + oData.events.event[0].id + "2").attr("src", _img_url); //set img source
+                            }
+                        } else {
+                            if (oData.events.event.city_name && oData.events.event.city_name != "Watertown"){
+                                albumPlaceHolder.innerHTML += albumProfileTemplate(oData.events.event);
+                                if(!$("#" + oData.events.event.id + "2").attr("src"))
+                                    $("#" + oData.events.event.id + "2").attr("src", _img_url); //set img source
                             }
                         }
                     }
                 });
             }
+
         })();
     </script>
-    
-    <script type="text/javascript" src="http://api.eventful.com/js/api">
-    </script>
-    <script type="text/javascript">
-        function eventful_api_call(location, keywords, date, radius) {
-            var oArgs = {
-                app_key: 'dVZ4kGxHCr6QMvS9',
-                q: "music",
-                where: location,
-                sort_order: "popularity",
-                keywords: keywords,
-                date: date,
-                within: radius
-            };
-            EVDB.API.call("/events/search", oArgs, function (oData) {
-                if(oData.events != null)
-                    if(parseInt(oData.page_count) > 1)
-                        alert(oData.events.event[0].city_name + ', keywords :' + keywords);
-                    else
-                        alert(oData.events.event.city_name + ', keywords :' + keywords);
-            });
-        }
-    </script>
-</body>
+</footer>
 
 </html>
