@@ -6,6 +6,14 @@
         body {
             margin: 0 100px;
             background-color: #fffff6;
+            color: #0a4816;
+        }
+        .btn{
+            background-color: #00cc00;
+            color: #fffff6;
+        }
+        .form-control{
+           background-color: #ccf4cc;
         }
     </style>
 </header>
@@ -60,6 +68,18 @@
                 <button class="btn btn-default" id="lookup" onclick="lookupConcerts()">Search concerts</button>
             </div>
         </div>
+        <hr>
+        <div class="form-group">
+            <label for="inputPassword3" class="col-sm-2 control-label">Artist name</label>
+            <div class="col-sm-5">
+                <input type="text" class="form-control" id="inputArtist" placeholder="James Brown">
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-5">
+                <button class="btn btn-default" id="lookup" onclick="lookupRelatedArtists()">Search related artists</button>
+            </div>
+        </div>
          <div class="form-group">
             <h2 class="col-sm-2 control-label">Results</h2>
         </div>
@@ -86,6 +106,8 @@
                     <dd>{{venue_name}}</dd>
                     <dt>Date</dt>
                     <dd>{{start_time}}</dd>
+                    <dt>Related to</dt>
+                    <dd id='{{id}}3'></dd>
                 </dl>
             </div>
         </div>
@@ -160,7 +182,51 @@
                 albumPlaceHolder.innerHTML = "<img src='http://preloaders.net/preloaders/8/Triangles%20indicator.gif' id='load" + loadCount + "'/>";
                 getPlaylistAlbums(playlist, radius, location);
             }
-
+            
+            lookupRelatedArtists = function () {
+                var artist = $("#inputArtist").val();
+                var radius = "200";
+                var location = "Ottawa";
+                albumPlaceHolder.innerHTML = "<img src='http://preloaders.net/preloaders/8/Triangles%20indicator.gif' id='load" + loadCount + "'/>";
+                getRelatedId(artist, radius, location);
+            }
+            
+            function getRelatedId(artist_query, radius, location){
+                var artist_id = "101010101010101";
+                $.ajax({
+                    url: 'https://api.spotify.com/v1/search?q='+ artist_query +'&type=artist',
+                    success: function (response) {
+                            if (response.artists.items[0]){
+                                getRelatedArtists(response.artists.items[0].id, radius, location);
+                            }
+                            else{
+                                getRelatedArtists(response.artists.items.id, radius, location);
+                            }
+                        }
+                    }
+                );
+            }
+            
+            function getRelatedArtists(id, radius, location){
+                $.ajax({
+                    url: 'https://api.spotify.com/v1/artists/'+ id +'/related-artists',
+                    headers: {
+                        'Authorization': 'Bearer ' + access_token
+                    },
+                    success: function (response) {
+                        var a = 0
+                        var _img_url;
+                        var _keyword;
+                        while (response.artists[a] != null) {
+                                _img_url = response.artists[a].images[0].url; //verify
+                                _keyword = response.artists[a].name; //change
+                                eventful_api_call(_keyword, radius, location, 'Future', _img_url);
+                                a++;
+                            }
+                        }
+                    });
+            }
+            
             var img_url = "";
             var current_id = "";
             var result_count = 0;
@@ -236,6 +302,7 @@
                                     $("#" + oData.events.event.id + "2").attr("src", _img_url); //set img source
                             }
                         }
+                        $("#" + oData.events.event.id + "3").text(keywords);
                     }
                 });
             }
